@@ -19,21 +19,21 @@ default = []
 gpu = ["myelin-accelerator"]
 
 [dependencies]
-# ── Spikenaut ecosystem (local path deps) ────────────────────────
-neuromod            = { path = "/home/raulmc/neuromod" }
-spikenaut-encoder   = { path = "/home/raulmc/spikenaut-encoder" }
-spikenaut-reward    = { path = "/home/raulmc/spikenaut-reward" }
-spikenaut-telemetry = { path = "/home/raulmc/spikenaut-telemetry" }
-myelin-accelerator  = { path = "/home/raulmc/myelin-accelerator", optional = true }
+# ── Spikenaut ecosystem (workspace deps) ────────────────────────────
+neuromod            = { workspace = true }
+spikenaut-encoder   = { workspace = true }
+spikenaut-reward    = { workspace = true }
+spikenaut-telemetry = { workspace = true }
+myelin-accelerator  = { path = "../myelin-accelerator", optional = true }
 
 # ── Core numerical / serialization ───────────────────────────────
 rand = "0.8"
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
+serde = { workspace = true }
+serde_json = { workspace = true }
 rayon = "1.7"
 memmap2 = "0.9"
 half = "2"
-thiserror = "2"
+thiserror = { workspace = true }
 
 [profile.release]
 opt-level = 3
