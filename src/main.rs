@@ -1,16 +1,11 @@
-pub mod tensor;
-pub mod transformer;
-pub mod fusion;
-pub mod training;
-pub mod fpga_export;
-pub mod error;
+// The library crate owns all modules; the binary just uses them.
+use spike_lmo::tensor;
 
 fn main() {
     println!("SpikeLMo — SNN/LLM Fusion Framework (candle-free)");
     println!("  neuromod   : SNN neurons + STDP + neuromodulators");
     println!("  spikenaut-encoder   : sensory encoding pipelines");
     println!("  spikenaut-reward    : homeostatic reward computation");
-    println!("  spikenaut-fpga      : Q8.8 FPGA deployment");
     println!("  spikenaut-telemetry : hardware telemetry snapshots");
     println!();
 
@@ -25,7 +20,7 @@ fn main() {
     neuron.weights = vec![1.0; 16];
     neuron.integrate(1.5);
     let vm_before = neuron.membrane_potential;
-    let fired = neuron.check_fire(); // Returns Option<f32>: Some(peak_vm) or None
+    let fired = neuron.check_fire();
     println!("[neuromod] LIF Vm_pre={vm_before:.4}, fired={fired:?}");
 
     // Smoke test: spikenaut-reward
@@ -40,10 +35,6 @@ fn main() {
     };
     let reward = reward_state.compute(&telem, Some(68.0));
     println!("[spikenaut-reward] mining dopamine: {reward:.4}");
-
-    // Smoke test: spikenaut-fpga Q8.8
-    let hex = fpga_export::format_q88_hex(0.85);
-    println!("[spikenaut-fpga] 0.85 → Q8.8 hex: {hex}");
 
     // Smoke test: spikenaut-encoder
     let encoder = spikenaut_encoder::SensoryEncoder::new();

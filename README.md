@@ -8,6 +8,10 @@ SpikeLMo is an upgrade and consolidation of my existing Rust and Julia libraries
 
 **LLM Choice**: This framework is going to use **allenai/OLMoE-1B-7B-0125-Instruct** as the base language model for SNN/LLM fusion experiments.
 
+## Philosophy
+
+**This is primarily a consolidation effort, not greenfield development.** I'm copying and pasting pieces from my existing Rust and Julia neuromorphic computing stack that I've already built over years of work. The goal is to bring these battle-tested components together into a unified framework rather than reinventing the wheel. Each crate in the Spikenaut ecosystem represents functionality I've previously implemented and validated in production or research contexts.
+
 ## Architecture
 
 The framework consists of:
@@ -15,7 +19,6 @@ The framework consists of:
 - **Custom Tensor & Transformer** — hand-rolled tensor operations (`src/tensor/`) and transformer components (`src/transformer/`) as candle-core/candle-nn replacements
 - **SNN/LLM Fusion Layer** — novel bridge (`src/fusion.rs`) connecting neuromod's spiking networks with transformer hidden states
 - **E-prop Training** — eligibility-propagation trainer (`src/training.rs`) using Spikenaut reward, encoder, and telemetry crates
-- **FPGA Export** — Q8.8 fixed-point deployment pipeline (`src/fpga_export.rs`) via spikenaut-fpga
 
 ## Spikenaut Ecosystem Integration
 
@@ -26,7 +29,6 @@ SpikeLMo integrates the following local crates:
 | `neuromod` | High-performance SNN library | LIF neurons, STDP, neuromodulators |
 | `spikenaut-encoder` | Sensory encoding pipelines | Telemetry → 16-channel spike trains |
 | `spikenaut-reward` | Homeostatic reward computation | Mining efficiency dopamine, EMA smoothing |
-| `spikenaut-fpga` | Q8.8 FPGA deployment | `.mem` file generation for hardware |
 | `spikenaut-telemetry` | Hardware telemetry snapshots | GPU/CPU/mining data aggregation |
 | `myelin-accelerator` | CUDA spiking kernels (optional) | GPU-dispatched SNN simulation |
 

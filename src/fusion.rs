@@ -161,7 +161,7 @@ impl SnnLlmFusion {
         }
     }
 
-    /// Returns the current SNN weight matrix (for FPGA export or inspection).
+    /// Returns the current SNN weight matrix (for inspection).
     pub fn snn_weights_flat(&self) -> Vec<f32> {
         let mut flat = Vec::new();
         for neuron in &self.snn.neurons {

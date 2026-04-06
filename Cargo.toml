@@ -6,6 +6,14 @@ description = "SNN/LLM Fusion Framework — candle-free neuromorphic inference a
 authors = ["Raul Mc"]
 license = "GPL-3.0"
 
+[lib]
+name = "spike_lmo"
+path = "src/lib.rs"
+
+[[bin]]
+name = "spike-lmo"
+path = "src/main.rs"
+
 [features]
 default = []
 gpu = ["myelin-accelerator"]
@@ -15,7 +23,6 @@ gpu = ["myelin-accelerator"]
 neuromod            = { path = "/home/raulmc/neuromod" }
 spikenaut-encoder   = { path = "/home/raulmc/spikenaut-encoder" }
 spikenaut-reward    = { path = "/home/raulmc/spikenaut-reward" }
-spikenaut-fpga      = { path = "/home/raulmc/spikenaut-fpga" }
 spikenaut-telemetry = { path = "/home/raulmc/spikenaut-telemetry" }
 myelin-accelerator  = { path = "/home/raulmc/myelin-accelerator", optional = true }
 

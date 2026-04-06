@@ -3,6 +3,9 @@
 # Cargo lockfile (for library projects)
 Cargo.lock
 
+# IDE configuration
+.windsurf/
+
 # OLMo model weights and folders
 OLMoE-*/
 olmoe-*/
