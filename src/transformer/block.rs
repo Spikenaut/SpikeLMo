@@ -1,0 +1,117 @@
+use crate::tensor::Tensor;
+use crate::tensor::ops::{matmul, layer_norm};
+use super::attention::MultiHeadAttention;
+use serde::{Deserialize, Serialize};
+
+/// Feed-forward network (two linear layers with GELU activation).
+#[derive(Clone, Serialize, Deserialize)]
+pub struct FeedForward {
+    pub w1: Tensor,  // [dim, ff_dim]
+    pub b1: Tensor,  // [1, ff_dim]
+    pub w2: Tensor,  // [ff_dim, dim]
+    pub b2: Tensor,  // [1, dim]
+}
+
+impl FeedForward {
+    pub fn new(dim: usize, ff_dim: usize) -> Self {
+        let scale = 1.0 / (dim as f32).sqrt();
+        Self {
+            w1: Tensor::randn(&[dim, ff_dim], 0.0, scale),
+            b1: Tensor::zeros(&[1, ff_dim]),
+            w2: Tensor::randn(&[ff_dim, dim], 0.0, scale),
+            b2: Tensor::zeros(&[1, dim]),
+        }
+    }
+
+    pub fn forward(&self, x: &Tensor) -> Tensor {
+        let seq_len = x.shape()[0];
+        // x @ w1 + b1
+        let h = matmul(x, &self.w1).add(&broadcast_row(&self.b1, seq_len));
+        // GELU activation
+        let h = h.gelu();
+        // h @ w2 + b2
+        matmul(&h, &self.w2).add(&broadcast_row(&self.b2, seq_len))
+    }
+
+    pub fn param_count(&self) -> usize {
+        self.w1.numel() + self.b1.numel() + self.w2.numel() + self.b2.numel()
+    }
+}
+
+/// Single transformer block: LayerNorm → Attention → Residual → LayerNorm → FFN → Residual
+#[derive(Clone, Serialize, Deserialize)]
+pub struct TransformerBlock {
+    pub attn: MultiHeadAttention,
+    pub ffn: FeedForward,
+    pub ln1_w: Tensor,
+    pub ln1_b: Tensor,
+    pub ln2_w: Tensor,
+    pub ln2_b: Tensor,
+    pub dim: usize,
+}
+
+impl TransformerBlock {
+    pub fn new(dim: usize, num_heads: usize, ff_dim: usize) -> Self {
+        Self {
+            attn: MultiHeadAttention::new(dim, num_heads),
+            ffn: FeedForward::new(dim, ff_dim),
+            ln1_w: Tensor::ones(&[dim]),
+            ln1_b: Tensor::zeros(&[dim]),
+            ln2_w: Tensor::ones(&[dim]),
+            ln2_b: Tensor::zeros(&[dim]),
+            dim,
+        }
+    }
+
+    /// Pre-norm transformer block (GPT-style):
+    /// x = x + attn(layernorm(x))
+    /// x = x + ffn(layernorm(x))
+    pub fn forward(&self, x: &Tensor) -> Tensor {
+        let eps = 1e-5;
+
+        // Attention sub-layer with residual
+        let normed = layer_norm(x, &self.ln1_w, &self.ln1_b, eps);
+        let attn_out = self.attn.forward(&normed);
+        let x = x.add(&attn_out);
+
+        // FFN sub-layer with residual
+        let normed = layer_norm(&x, &self.ln2_w, &self.ln2_b, eps);
+        let ffn_out = self.ffn.forward(&normed);
+        x.add(&ffn_out)
+    }
+
+    pub fn param_count(&self) -> usize {
+        self.attn.param_count() + self.ffn.param_count() + 4 * self.dim
+    }
+}
+
+fn broadcast_row(bias: &Tensor, rows: usize) -> Tensor {
+    let cols = bias.numel();
+    let bd = bias.data();
+    let mut out = vec![0.0f32; rows * cols];
+    for r in 0..rows {
+        out[r * cols..(r + 1) * cols].copy_from_slice(bd);
+    }
+    Tensor::from_vec(out, &[rows, cols])
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_block_shapes() {
+        let block = TransformerBlock::new(64, 4, 256);
+        let x = Tensor::randn(&[8, 64], 0.0, 0.02);
+        let out = block.forward(&x);
+        assert_eq!(out.shape(), &[8, 64]);
+    }
+
+    #[test]
+    fn test_ffn_shapes() {
+        let ffn = FeedForward::new(64, 256);
+        let x = Tensor::randn(&[4, 64], 0.0, 0.1);
+        let out = ffn.forward(&x);
+        assert_eq!(out.shape(), &[4, 64]);
+    }
+}

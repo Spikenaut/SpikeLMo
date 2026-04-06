@@ -1,0 +1,33 @@
+[package]
+name = "spike-lmo"
+version = "0.1.0"
+edition = "2024"
+description = "SNN/LLM Fusion Framework — candle-free neuromorphic inference and training"
+authors = ["Raul Mc"]
+license = "GPL-3.0"
+
+[features]
+default = []
+gpu = ["myelin-accelerator"]
+
+[dependencies]
+# ── Spikenaut ecosystem (local path deps) ────────────────────────
+neuromod            = { path = "/home/raulmc/neuromod" }
+spikenaut-encoder   = { path = "/home/raulmc/spikenaut-encoder" }
+spikenaut-reward    = { path = "/home/raulmc/spikenaut-reward" }
+spikenaut-fpga      = { path = "/home/raulmc/spikenaut-fpga" }
+spikenaut-telemetry = { path = "/home/raulmc/spikenaut-telemetry" }
+myelin-accelerator  = { path = "/home/raulmc/myelin-accelerator", optional = true }
+
+# ── Core numerical / serialization ───────────────────────────────
+rand = "0.8"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+rayon = "1.7"
+memmap2 = "0.9"
+half = "2"
+thiserror = "2"
+
+[profile.release]
+opt-level = 3
+lto = "fat"

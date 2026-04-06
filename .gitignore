@@ -1,0 +1,9 @@
+/target
+
+# Cargo lockfile (for library projects)
+Cargo.lock
+
+# OLMo model weights and folders
+OLMoE-*/
+olmoe-*/
+*.gguf
